@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: "./backend"
+    depends_on:
+      - database
+    environment:
+      - POSTGRES_DB_USER=${DB_USER}
+      - POSTGRES_DB_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB_NAME=${DB_NAME}
+      - POSTGRES_DB_HOST=${DB_HOST}
+      - POSTGRES_DB_PORT=${DB_PORT}
+    ports:
+      - 8080:8080
+    volumes:
+      - server_data:/app
+    restart: on-failure
+
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ./frontend
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_API_URL=${API_URL}
+
+volumes:
+  pg_data:
+  server_data:
